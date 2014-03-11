@@ -7,29 +7,37 @@
 MODE=DEBUG
 CC=gcc
 CFLAGS=
-LDFLAGS=
+LDFLAGS= -lm
 PATHEXEC=bin/
-EXEC=ifpthreads
+EXEC=ifpthreads generator
 TARGET=$(addprefix $(PATHEXEC), $(EXEC))
 
 ifeq ($(MODE),DEBUG)
 	CFLAGS:=$(CFLAGS) -g
 endif
 
-SRC=generator.c
+SRC=generator.c ifpthreads.c
 OBJ=$(SRC:.cpp=.o)
 
 all: $(TARGET)
 
-$(TARGET): $(OBJ)
+$(PATHEXEC)generator: generator.o
 	@mkdir -p $(PATHEXEC)
 	$(CC) -o $@ $^ $(LDFLAGS)
 
-%.o: %.cpp
+$(PATHEXEC)ifpthreads: ifpthreads.o
+	@mkdir -p $(PATHEXEC)
+	$(CC) -o $@ $^ $(LDFLAGS)
+
+#$(TARGET): $(OBJ)
+#	@mkdir -p $(PATHEXEC)
+#	$(CC) -o $@ $^ $(LDFLAGS)
+
+%.o: %.c
 	$(CC) -o $@ -c $< $(CFLAGS)
 
-run: $(TARGET)
-	@./$(TARGET)
+#run: $(TARGET)
+#	@./$(TARGET)
 
 #test: $(TARGET)
 
