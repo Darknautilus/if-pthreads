@@ -39,8 +39,22 @@ int main(int argc, const char **argv)
 {
 	const char *str;
 	char *endptr;
-	str = argv[1];
-	print_prime_factors(strtol(str,&endptr,10));
-	printf("\n");
+
+	FILE *numbers = fopen("numbers","r");
+	if(numbers == NULL)
+	{
+		printf("Fichier numbers introuvable\n");
+		exit(EXIT_FAILURE);
+	}
+	
+	uint64_t num;
+	while(fscanf(numbers,"%llu\n",&num) != EOF)
+	{
+		print_prime_factors(num);
+		printf("\n");
+	}
+
+	fclose(numbers);
+
 	return 0;
 }
