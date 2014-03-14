@@ -7,7 +7,7 @@
 MODE=DEBUG
 CC=gcc
 CFLAGS=
-LDFLAGS= -lm
+LDFLAGS= -lm -lpthread
 PATHEXEC=bin/
 EXEC=ifpthreads generator
 TARGET=$(addprefix $(PATHEXEC), $(EXEC))
