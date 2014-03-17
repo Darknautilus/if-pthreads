@@ -43,6 +43,29 @@ void *printer_thread(void *n)
 	printf("\n");
 }
 
+typedef struct
+{
+	FILE *file;
+	pthread_mutex_t *mutex;
+} threadFile;
+
+void *reader_thread(void *threadfile)
+{
+	uint64_t num;
+	
+	threadFile *tf = (threadFile*)threadfile;
+
+	pthread_mutex_lock(tf->mutex);
+	while(fscanf(tf->file,"%llu\n",&num) != EOF)
+	{
+		pthread_mutex_unlock(tf->mutex);
+		print_prime_factors(num);
+		printf("\n");
+		pthread_mutex_lock(tf->mutex);
+	}
+	pthread_mutex_unlock(tf->mutex);
+}
+
 int main(int argc, const char **argv)
 {
 	FILE *numbers = fopen("numbers","r");
@@ -67,21 +90,24 @@ int main(int argc, const char **argv)
 	uint64_t num2;
 	pthread_t thread1;
 	pthread_t thread2;
-	while(fscanf(numbers,"%llu\n",&num1) != EOF)
+
+	if(is_parallel)
 	{
-		if(is_parallel)
-		{
-			pthread_create(&thread1,NULL,printer_thread,&num1);
-			if(fscanf(numbers,"%llu\n",&num2) != EOF)
-			{
-				pthread_create(&thread2,NULL,printer_thread,&num2);
-				pthread_join(thread2,NULL);
-			}
-			pthread_join(thread1,NULL);
-			if(feof(numbers))
-				break;
-		}
-		else
+		pthread_mutex_t fileMutex = PTHREAD_MUTEX_INITIALIZER;
+
+		threadFile tf;
+		tf.file = numbers;
+		tf.mutex = &fileMutex;
+
+		pthread_create(&thread1,NULL,reader_thread,&tf);
+		pthread_create(&thread2,NULL,reader_thread,&tf);
+		
+		pthread_join(thread2,NULL);
+		pthread_join(thread1,NULL);
+	}
+	else
+	{
+		while(fscanf(numbers,"%llu\n",&num1) != EOF)
 		{
 			print_prime_factors(num1);
 			printf("\n");
