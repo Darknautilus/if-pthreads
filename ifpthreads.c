@@ -4,6 +4,8 @@
 #include <pthread.h>
 #include <string.h>
 
+#define MAX_FACTORS 50
+
 unsigned short int is_prime(uint64_t p)
 {
 	uint64_t i;
@@ -17,9 +19,9 @@ unsigned short int is_prime(uint64_t p)
 	return 1;
 }
 
-void print_prime_factors(uint64_t n)
+int get_prime_factors(uint64_t n, uint64_t *dest)
 {
-	printf("%llu: ",n);
+	uint16_t i = 0;
 	uint64_t div = 2;
 	while(n)
 	{
@@ -30,10 +32,26 @@ void print_prime_factors(uint64_t n)
 		else
 		{
 			n = n/div;
-			printf("%llu ",div);
+			dest[i] = div;
+			i++;
 			if(n==1)
 				break;
 		}
+	}
+	return i;
+}
+
+void print_prime_factors(uint64_t n)
+{
+	uint64_t factors[MAX_FACTORS];
+	uint16_t j,k;
+
+	k = get_prime_factors(n,factors);
+
+	printf("%llu: ",n);
+	for(j=0;j<k;j++)
+	{
+		printf("%llu ",factors[j]);
 	}
 }
 
