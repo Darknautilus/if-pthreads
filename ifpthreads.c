@@ -5,6 +5,32 @@
 #include <string.h>
 
 #define MAX_FACTORS 50
+#define MAX_DECOMP 1000
+
+typedef struct
+{
+	uint64_t num;
+	int nb_factors;
+	uint64_t factors[MAX_FACTORS];
+} decomp;
+
+static int nb_decomp = 0;
+static decomp *known_decomp[MAX_DECOMP];
+static pthread_mutex_t decomp_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+// Attention, non thread-safe
+int is_known(uint64_t n)
+{
+	int i;
+	for(i=0;i<nb_decomp;i++)
+	{
+		if(known_decomp[i]->num == n)
+		{
+			return i;
+		}
+	}
+	return -1; // si non trouvé
+}
 
 unsigned short int is_prime(uint64_t p)
 {
@@ -23,6 +49,8 @@ int get_prime_factors(uint64_t n, uint64_t *dest)
 {
 	uint16_t i = 0;
 	uint64_t div = 2;
+	decomp *d = (decomp*)malloc(sizeof(decomp));
+	d->num = n;
 	while(n)
 	{
 		if(n%div)
@@ -33,26 +61,52 @@ int get_prime_factors(uint64_t n, uint64_t *dest)
 		{
 			n = n/div;
 			dest[i] = div;
+			d->factors[i] = div;
 			i++;
 			if(n==1)
 				break;
 		}
 	}
+	d->nb_factors = i;
+
+	pthread_mutex_lock(&decomp_mutex);
+	known_decomp[nb_decomp] = d;
+	nb_decomp++;
+	pthread_mutex_unlock(&decomp_mutex);
+
 	return i;
 }
 
 void print_prime_factors(uint64_t n)
 {
-	uint64_t factors[MAX_FACTORS];
-	uint16_t j,k;
+	uint64_t *factors;
 
-	k = get_prime_factors(n,factors);
+	int j,k;
+	int n_known = 0;
+
+	pthread_mutex_lock(&decomp_mutex);
+	if((k = is_known(n)) >= 0)
+	{
+		n_known = 1;
+		factors = known_decomp[k]->factors;
+		k = known_decomp[k]->nb_factors;
+		pthread_mutex_unlock(&decomp_mutex);
+	}
+	else
+	{
+		pthread_mutex_unlock(&decomp_mutex);
+		factors = (uint64_t *)malloc(MAX_FACTORS*sizeof(uint64_t));
+		k = get_prime_factors(n,factors);
+	}
 
 	printf("%llu: ",n);
 	for(j=0;j<k;j++)
 	{
 		printf("%llu ",factors[j]);
 	}
+
+	if(!n_known)
+		free(factors);
 }
 
 void *printer_thread(void *n)
@@ -133,6 +187,12 @@ int main(int argc, const char **argv)
 	}
 
 	fclose(numbers);
+
+	int i;
+	for(i=0;i<nb_decomp;i++)
+	{
+		free(known_decomp[i]);
+	}
 
 	return 0;
 }
