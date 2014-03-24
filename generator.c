@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
 
     // we seed the the generator with a constant value so as to get
     // reproducible results.
-    srandom(0);
+    srandom(237);
 
     previous_numbers=malloc(quantity*sizeof(uint64_t));
     
