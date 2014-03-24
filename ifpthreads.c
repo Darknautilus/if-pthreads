@@ -19,17 +19,55 @@ static decomp *known_decomp[MAX_DECOMP];
 static pthread_mutex_t decomp_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 // Attention, non thread-safe
-int is_known(uint64_t n)
+int is_known(uint64_t n/*,int *ou_ajouter*/)
 {
-	int i;
-	for(i=0;i<nb_decomp;i++)
+	printf("hu\n");
+	if(nb_decomp)
 	{
-		if(known_decomp[i]->num == n)
+		printf("wow");
+		int i=nb_decomp/2;
+		int sortir =0;
+		int avant;
+
+		while(!sortir)
 		{
-			return i;
+			avant=i;
+			if(known_decomp[i]->num == n)
+			{
+				return i;
+			}
+			else if(n<known_decomp[i]->num)
+			{
+				i-=(i/2);
+			}
+			else
+			{
+				i+=i/2;
+			}
+			if(!(avant-i))
+				sortir=1;
 		}
 	}
 	return -1; // si non trouvé
+}
+
+void addDecompTriee(decomp *d)
+{			
+	int i=1;
+	for (i; i<=nb_decomp;i++)
+	{
+		if(d->num<known_decomp[i-1]->num)
+		{
+			int j=nb_decomp;
+			for(j;j>i;j--)
+			{
+				known_decomp[j]=known_decomp[j-1];
+			}
+			known_decomp[i]=d;
+			nb_decomp++;
+			break;
+		}
+	}
 }
 
 unsigned short int is_prime(uint64_t p)
@@ -75,7 +113,8 @@ int get_prime_factors(uint64_t n, uint64_t *dest)
 	d->nb_factors = i;
 
 	pthread_mutex_lock(&decomp_mutex);
-	known_decomp[nb_decomp] = d;
+	//known_decomp[nb_decomp] = d;
+	addDecompTriee(d);
 	nb_decomp++;
 	pthread_mutex_unlock(&decomp_mutex);
 
