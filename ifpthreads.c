@@ -167,6 +167,8 @@ int main(int argc, const char **argv)
 	uint64_t num2;
 	pthread_t thread1;
 	pthread_t thread2;
+	pthread_t thread3;
+	pthread_t thread4;
 
 	if(is_parallel)
 	{
@@ -178,7 +180,11 @@ int main(int argc, const char **argv)
 
 		pthread_create(&thread1,NULL,reader_thread,&tf);
 		pthread_create(&thread2,NULL,reader_thread,&tf);
+		pthread_create(&thread3,NULL,reader_thread,&tf);
+		pthread_create(&thread4,NULL,reader_thread,&tf);
 		
+		pthread_join(thread4,NULL);
+		pthread_join(thread3,NULL);
 		pthread_join(thread2,NULL);
 		pthread_join(thread1,NULL);
 	}
