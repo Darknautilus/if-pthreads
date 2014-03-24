@@ -47,7 +47,8 @@ unsigned short int is_prime(uint64_t p)
 
 int get_prime_factors(uint64_t n, uint64_t *dest)
 {
-	uint16_t i = 0;
+	uint8_t i = 0;
+	uint8_t pas = 1;
 	uint64_t div = 2;
 	decomp *d = (decomp*)malloc(sizeof(decomp));
 	d->num = n;
@@ -55,7 +56,11 @@ int get_prime_factors(uint64_t n, uint64_t *dest)
 	{
 		if(n%div)
 		{
-			div++;
+			div += pas;
+			if(div > 2)
+			{
+				pas = 2;
+			}
 		}
 		else
 		{
