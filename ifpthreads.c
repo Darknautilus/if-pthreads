@@ -5,7 +5,7 @@
 #include <string.h>
 
 #define MAX_FACTORS 50
-#define MAX_DECOMP 1000
+#define MAX_DECOMP 2000000
 
 typedef struct
 {
@@ -52,7 +52,7 @@ int get_prime_factors(uint64_t n, uint64_t *dest)
 	uint64_t div = 2;
 	decomp *d = (decomp*)malloc(sizeof(decomp));
 	d->num = n;
-	while(n)
+	while(div*div<=n)
 	{
 		if(n%div)
 		{
